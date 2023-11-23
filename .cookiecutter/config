@@ -1,0 +1,5 @@
+# Change these at your peril:
+export PROJECT_NAME=discovery_gtr
+export REPO_NAME=discovery_gtr
+export DESCRIPTION=Automating data transfer from the GtR API, processing, and storing on Amazon S3
+export PROJECT_OPENNESS=private
