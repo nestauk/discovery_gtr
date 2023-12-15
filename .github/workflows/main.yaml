@@ -1,4 +1,4 @@
-name: Gateway to Research Automation
+name: Gateway to Research API Automation
 
 on:
   schedule:
@@ -46,4 +46,4 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           MY_BUCKET_NAME: ${{ secrets.MY_BUCKET_NAME }}
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
-        run: python discovery_crunchbase/getters/gtr_to_s3.py
+        run: python discovery_gtr/getters/gtr_to_s3.py
