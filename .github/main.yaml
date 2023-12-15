@@ -1,4 +1,4 @@
-name: Gateway to Research Automation
+name: Gateway to Research API Automation
 
 on:
   schedule:
