@@ -187,7 +187,7 @@ def gtr_to_s3(endpoint: str) -> None:
 # Run the workflow
 if __name__ == "__main__":
     logging.info("Script execution started")
-    if endpoint:
+    if ENDPOINT:
         gtr_to_s3(ENDPOINT)
     else:
         logging.error(

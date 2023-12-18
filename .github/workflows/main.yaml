@@ -12,22 +12,21 @@ jobs:
 
     strategy:
       matrix:
-        endpoint:
-          [
+        endpoint: [
             "funds",
             "organisations",
-            "outcomes",
-            "outcomes/keyfindings",
-            "outcomes/impactsummaries",
-            "outcomes/publications",
-            "outcomes/collaborations",
-            "outcomes/intellectualproperties",
-            "outcomes/policyinfluences",
-            "outcomes/products",
-            "outcomes/researchmaterials",
-            "outcomes/spinouts",
-            "outcomes/furtherfundings",
-            "outcomes/disseminations",
+            # "outcomes",
+            # "outcomes/keyfindings",
+            # "outcomes/impactsummaries",
+            # "outcomes/publications",
+            # "outcomes/collaborations",
+            # "outcomes/intellectualproperties",
+            # "outcomes/policyinfluences",
+            # "outcomes/products",
+            # "outcomes/researchmaterials",
+            # "outcomes/spinouts",
+            # "outcomes/furtherfundings",
+            # "outcomes/disseminations",
             "persons",
             "projects",
           ]
