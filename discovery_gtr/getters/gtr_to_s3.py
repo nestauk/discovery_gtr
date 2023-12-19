@@ -141,6 +141,24 @@ def upload_data_to_s3(
     s3_client.put_object(Body=json_data.encode("utf-8"), Bucket=bucket_name, Key=s3_key)
 
 
+def log_percentage_complete(page_no: int, total_pages: int) -> None:
+    """Logs the percentage of completion.
+    Args:
+        page_no (int): The current page number.
+        total_pages (int): The total number of pages.
+    Returns:
+        None"""
+    # Log the percentage of completion when it reaches a milestone
+    percentage_complete = (page_no / total_pages) * 100
+    rounded_percentage = math.floor(percentage_complete)
+
+    # Check if the rounded percentage has changed
+    if rounded_percentage != prev_percentage:
+        logging.info(f"{endpoint}: Downloaded {rounded_percentage}%")
+        # Update the previously logged percentage
+        prev_percentage = rounded_percentage
+
+
 def gtr_to_s3(endpoint: str) -> None:
     """Fetches a paginated bulk data resource from GtR API, and saves it to S3.
     Args:
@@ -170,15 +188,8 @@ def gtr_to_s3(endpoint: str) -> None:
         # Accumulate data
         all_data.extend(r.json())
 
-        # Log the percentage of completion when it reaches a milestone
-        percentage_complete = (page_no / total_pages) * 100
-        rounded_percentage = math.floor(percentage_complete)
-
-        # Check if the rounded percentage has changed
-        if rounded_percentage != prev_percentage:
-            logging.info(f"{endpoint}: Downloaded {rounded_percentage}%")
-            # Update the previously logged percentage
-            prev_percentage = rounded_percentage
+        # Log the percentage of completion
+        log_percentage_complete(page_no, total_pages)
 
     # Upload all data to S3 using s3.put_object()
     upload_data_to_s3(all_data, S3, MY_BUCKET_NAME, s3_key)
