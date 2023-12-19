@@ -64,10 +64,12 @@ def main_request(base_url: str, endpoint: str, page_parameter: str = ""):
         Returns:
             A response object."""
     full_url = base_url + endpoint + "?s=100" + page_parameter
+    logging.info(f"Calling GtR API: {full_url}")
     response = requests.get(
         full_url,
         headers={"Accept": "application/vnd.rcuk.gtr.json-v7"},
     )
+    logging.info(f"API response: {response.status_code}")
     return response
 
 
