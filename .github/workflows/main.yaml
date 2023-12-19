@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        endpoint: [
+        endpoints: [
             "funds",
             "organisations",
             # "outcomes",
@@ -67,5 +67,5 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           MY_BUCKET_NAME: ${{ secrets.MY_BUCKET_NAME }}
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
-          ENDPOINT: ${{ matrix.endpoint }}
+          ENDPOINTS: ${{ matrix.endpoints }}
         run: python discovery_gtr/getters/gtr_to_s3.py

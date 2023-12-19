@@ -41,7 +41,7 @@ AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 MY_BUCKET_NAME = os.getenv("MY_BUCKET_NAME")
 DESTINATION_S3_PATH = os.getenv("DESTINATION_S3_PATH")
 # Retrieve the endpoint from the environment variable
-ENDPOINT = os.getenv("ENDPOINT")
+ENDPOINTS = os.getenv("ENDPOINTS")
 
 
 # Define the API URL
@@ -141,13 +141,16 @@ def upload_data_to_s3(
     s3_client.put_object(Body=json_data.encode("utf-8"), Bucket=bucket_name, Key=s3_key)
 
 
-def log_percentage_complete(page_no: int, total_pages: int) -> None:
+def log_percentage_complete(
+    page_no: int, total_pages: int, prev_percentage: int, endpoint: str
+) -> int:
     """Logs the percentage of completion.
     Args:
         page_no (int): The current page number.
         total_pages (int): The total number of pages.
+        prev_percentage (int): The previously logged percentage.
     Returns:
-        None"""
+        int: The updated previously logged percentage."""
     # Log the percentage of completion when it reaches a milestone
     percentage_complete = (page_no / total_pages) * 100
     rounded_percentage = math.floor(percentage_complete)
@@ -155,8 +158,8 @@ def log_percentage_complete(page_no: int, total_pages: int) -> None:
     # Check if the rounded percentage has changed
     if rounded_percentage != prev_percentage:
         logging.info(f"{endpoint}: Downloaded {rounded_percentage}%")
-        # Update the previously logged percentage
-        prev_percentage = rounded_percentage
+
+    return rounded_percentage
 
 
 def gtr_to_s3(endpoint: str) -> None:
@@ -189,7 +192,9 @@ def gtr_to_s3(endpoint: str) -> None:
         all_data.extend(r.json())
 
         # Log the percentage of completion
-        log_percentage_complete(page_no, total_pages)
+        prev_percentage = log_percentage_complete(
+            page_no, total_pages, prev_percentage, endpoint
+        )
 
     # Upload all data to S3 using s3.put_object()
     upload_data_to_s3(all_data, S3, MY_BUCKET_NAME, s3_key)
@@ -198,10 +203,10 @@ def gtr_to_s3(endpoint: str) -> None:
 # Run the workflow
 if __name__ == "__main__":
     logging.info("Script execution started")
-    if ENDPOINT:
-        gtr_to_s3(ENDPOINT)
+    if ENDPOINTS:
+        gtr_to_s3(ENDPOINTS)
     else:
         logging.error(
-            "Endpoint not specified. Please set the ENDPOINT environment variable."
+            "Endpoint not specified. Please set the ENDPOINTS environment variable."
         )
     logging.info("Script execution completed")
