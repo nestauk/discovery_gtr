@@ -3,8 +3,8 @@ name: Gateway to Research API Automation
 on:
   schedule:
     - cron: "0 0 * * *" # Run every day at midnight
-  push:
-    branches-ignore: [] # will run whenever pushed to any branch
+#  push:
+#    branches-ignore: [] # will run whenever pushed to any branch
 
 jobs:
   run_script:
