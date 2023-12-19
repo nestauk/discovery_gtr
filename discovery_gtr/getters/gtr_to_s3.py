@@ -5,6 +5,17 @@ This workflow:
 - Calls the GtR API to get the data for each page.
 - Saves the data to S3.
 
+This workflow works on GitHub Actions and locally.
+On GitHub Actions:
+- Each instance of the workflow fetches a different endpoint. The ENDPOINT environment
+variable is set to the endpoint to fetch.
+- The AWS_ACCESS_KEY, AWS_SECRET_KEY, MY_BUCKET_NAME and DESTINATION_S3_PATH environment
+variables are set in GitHub Secrets.
+Locally:
+- The ENDPOINTS environment variable is set to a list of endpoints to fetch one after the other.
+- The AWS_ACCESS_KEY, AWS_SECRET_KEY, MY_BUCKET_NAME and DESTINATION_S3_PATH environment
+variables are set in a .env file.
+
 Usage:
     python gtr_to_s3.py
 """
@@ -27,10 +38,14 @@ import math
 
 # Check if running in GitHub Actions
 if os.getenv("CI") == "true":
+    # Retrieve the endpoint from the environment variable
+    ENDPOINT = os.getenv("ENDPOINT")
     pass
 else:
     # If running locally, load environment variables from .env file
     load_dotenv()
+    # Retrieve the endpoints from the environment variable
+    ENDPOINTS = json.loads(os.getenv("ENDPOINTS"))
 
 # Retrieve AWS credentials from environment variables
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
@@ -38,8 +53,6 @@ AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 # Retrieve S3 bucket name and destination path from environment variables
 MY_BUCKET_NAME = os.getenv("MY_BUCKET_NAME")
 DESTINATION_S3_PATH = os.getenv("DESTINATION_S3_PATH")
-# Retrieve the endpoint from the environment variable
-ENDPOINT = json.loads(os.getenv("ENDPOINT"))
 
 
 # Define the API URL
@@ -188,13 +201,33 @@ def gtr_to_s3(endpoint: str) -> None:
     upload_data_to_s3(all_data, S3, MY_BUCKET_NAME, s3_key)
 
 
-# Run the workflow
-if __name__ == "__main__":
-    logging.info("Script execution started")
+def local_wrapper():
+    """Wrapper function for local execution."""
+    if ENDPOINTS:
+        for endpoint in ENDPOINTS:
+            gtr_to_s3(endpoint)
+    else:
+        logging.error(
+            "Endpoints not specified. Please set the ENDPOINTS environment variable."
+        )
+
+
+def github_wrapper():
+    """Wrapper function for GitHub Actions execution."""
     if ENDPOINT:
         gtr_to_s3(ENDPOINT)
     else:
         logging.error(
             "Endpoint not specified. Please set the ENDPOINT environment variable."
         )
+
+
+# Run the workflow
+if __name__ == "__main__":
+    logging.info("Script execution started")
+    # Check if running in GitHub Actions
+    if os.getenv("CI") == "true":
+        github_wrapper()
+    else:
+        local_wrapper()
     logging.info("Script execution completed")

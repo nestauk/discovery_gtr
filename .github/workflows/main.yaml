@@ -12,21 +12,21 @@ jobs:
 
     strategy:
       matrix:
-        endpoints: [
+        endpoint: [
             "funds",
             "organisations",
-            # "outcomes"
-            # "outcomes/keyfindings"
-            # "outcomes/impactsummaries"
-            # "outcomes/publications"
-            # "outcomes/collaborations"
-            # "outcomes/intellectualproperties"
-            # "outcomes/policyinfluences"
-            # "outcomes/products"
-            # "outcomes/researchmaterials"
-            # "outcomes/spinouts"
-            # "outcomes/furtherfundings"
-            # "outcomes/disseminations"
+            # "outcomes",
+            # "outcomes/keyfindings",
+            # "outcomes/impactsummaries",
+            # "outcomes/publications",
+            # "outcomes/collaborations",
+            # "outcomes/intellectualproperties",
+            # "outcomes/policyinfluences",
+            # "outcomes/products",
+            # "outcomes/researchmaterials",
+            # "outcomes/spinouts",
+            # "outcomes/furtherfundings",
+            # "outcomes/disseminations",
             "persons",
             "projects",
           ]
@@ -67,5 +67,5 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           MY_BUCKET_NAME: ${{ secrets.MY_BUCKET_NAME }}
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
-          ENDPOINT: ${{ matrix.endpoints }}
+          ENDPOINT: ${{ matrix.endpoint }}
         run: python discovery_gtr/getters/gtr_to_s3.py
