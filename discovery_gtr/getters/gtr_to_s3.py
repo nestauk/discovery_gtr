@@ -23,7 +23,7 @@ import math
 # - AWS_SECRET_KEY: the AWS secret key for S3
 # - MY_BUCKET_NAME: the name of the S3 bucket
 # - DESTINATION_S3_PATH: the path to the S3 destination folder
-# - ENDPOINTS: the endpoints to call
+# - ENDPOINT: the endpoint to call
 
 # Check if running in GitHub Actions
 if os.getenv("CI") == "true":
@@ -39,7 +39,7 @@ AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 MY_BUCKET_NAME = os.getenv("MY_BUCKET_NAME")
 DESTINATION_S3_PATH = os.getenv("DESTINATION_S3_PATH")
 # Retrieve the endpoint from the environment variable
-ENDPOINTS = json.loads(os.getenv("ENDPOINTS"))
+ENDPOINT = json.loads(os.getenv("ENDPOINT"))
 
 
 # Define the API URL
@@ -191,11 +191,10 @@ def gtr_to_s3(endpoint: str) -> None:
 # Run the workflow
 if __name__ == "__main__":
     logging.info("Script execution started")
-    if ENDPOINTS:
-        for endpoint in ENDPOINTS:
-            gtr_to_s3(endpoint)
+    if ENDPOINT:
+        gtr_to_s3(ENDPOINT)
     else:
         logging.error(
-            "Endpoints not specified. Please set the ENDPOINTS environment variable."
+            "Endpoint not specified. Please set the ENDPOINT environment variable."
         )
     logging.info("Script execution completed")

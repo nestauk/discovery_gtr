@@ -12,19 +12,24 @@ jobs:
 
     strategy:
       matrix:
-        endpoints: ["funds", "organisations", "persons", "projects"]
-    # "outcomes"
-    # "outcomes/keyfindings"
-    # "outcomes/impactsummaries"
-    # "outcomes/publications"
-    # "outcomes/collaborations"
-    # "outcomes/intellectualproperties"
-    # "outcomes/policyinfluences"
-    # "outcomes/products"
-    # "outcomes/researchmaterials"
-    # "outcomes/spinouts"
-    # "outcomes/furtherfundings"
-    # "outcomes/disseminations"
+        endpoints: [
+            "funds",
+            "organisations",
+            # "outcomes"
+            # "outcomes/keyfindings"
+            # "outcomes/impactsummaries"
+            # "outcomes/publications"
+            # "outcomes/collaborations"
+            # "outcomes/intellectualproperties"
+            # "outcomes/policyinfluences"
+            # "outcomes/products"
+            # "outcomes/researchmaterials"
+            # "outcomes/spinouts"
+            # "outcomes/furtherfundings"
+            # "outcomes/disseminations"
+            "persons",
+            "projects",
+          ]
 
     steps:
       - name: Upgrade pip
@@ -62,5 +67,5 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           MY_BUCKET_NAME: ${{ secrets.MY_BUCKET_NAME }}
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
-          ENDPOINTS: ${{ matrix.endpoints }}
+          ENDPOINT: ${{ matrix.endpoints }}
         run: python discovery_gtr/getters/gtr_to_s3.py
