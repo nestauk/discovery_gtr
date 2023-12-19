@@ -68,3 +68,17 @@ def gtr_to_s3_paginatedupload(endpoint: str) -> None:
         r = main_request(BASE_URL, endpoint, f"&p={page_no}")
         # Upload file to S3 using s3.put_object()
         append_to_s3(r.json(), S3, MY_BUCKET_NAME, s3_key)
+
+
+def content_type(response, endpoint: str) -> None:  # Not used
+    """
+    Prints the content type for each endpoint.
+    Args:
+        response: The response object.
+    Returns:
+        None
+    """
+    logging.info(f"Checking content type for endpoint: {endpoint}")
+    content_type = response.headers["content-type"]
+    # Print
+    logging.info(f"{content_type}: Content Type for {endpoint}")

@@ -11,13 +11,10 @@ Usage:
 import requests
 import json
 import logging
-from io import BytesIO
 import datetime
 import boto3
 import os
 from dotenv import load_dotenv
-import io
-import sys
 import math
 
 
@@ -26,6 +23,7 @@ import math
 # - AWS_SECRET_KEY: the AWS secret key for S3
 # - MY_BUCKET_NAME: the name of the S3 bucket
 # - DESTINATION_S3_PATH: the path to the S3 destination folder
+# - ENDPOINTS: the endpoints to call
 
 # Check if running in GitHub Actions
 if os.getenv("CI") == "true":
@@ -41,7 +39,7 @@ AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 MY_BUCKET_NAME = os.getenv("MY_BUCKET_NAME")
 DESTINATION_S3_PATH = os.getenv("DESTINATION_S3_PATH")
 # Retrieve the endpoint from the environment variable
-ENDPOINTS = os.getenv("ENDPOINTS")
+ENDPOINTS = json.loads(os.getenv("ENDPOINTS"))
 
 
 # Define the API URL
@@ -65,10 +63,12 @@ def main_request(base_url: str, endpoint: str, page_parameter: str = ""):
         endpoint (str): The endpoint to call.
         Returns:
             A response object."""
-    return requests.get(
-        base_url + endpoint + "?s=100" + page_parameter,
+    full_url = base_url + endpoint + "?s=100" + page_parameter
+    response = requests.get(
+        full_url,
         headers={"Accept": "application/vnd.rcuk.gtr.json-v7"},
     )
+    return response
 
 
 def get_total_pages(response) -> int:
@@ -94,20 +94,6 @@ def get_page_range(total_pages: int) -> range:
         A range of integers."""
     logging.info(f"Generating page range from 1 to {total_pages}")
     return range(1, total_pages + 1)
-
-
-def content_type(response, endpoint: str) -> None:  # Not used
-    """
-    Prints the content type for each endpoint.
-    Args:
-        response: The response object.
-    Returns:
-        None
-    """
-    logging.info(f"Checking content type for endpoint: {endpoint}")
-    content_type = response.headers["content-type"]
-    # Print
-    logging.info(f"{content_type}: Content Type for {endpoint}")
 
 
 def get_s3_key(name: str, destination_path: str) -> str:
@@ -204,9 +190,10 @@ def gtr_to_s3(endpoint: str) -> None:
 if __name__ == "__main__":
     logging.info("Script execution started")
     if ENDPOINTS:
-        gtr_to_s3(ENDPOINTS)
+        for endpoint in ENDPOINTS:
+            gtr_to_s3(endpoint)
     else:
         logging.error(
-            "Endpoint not specified. Please set the ENDPOINTS environment variable."
+            "Endpoints not specified. Please set the ENDPOINTS environment variable."
         )
     logging.info("Script execution completed")
