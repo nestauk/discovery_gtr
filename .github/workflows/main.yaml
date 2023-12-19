@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        endpoints: '["funds", "organisations", "persons", "projects"]'
+        endpoints: ["funds", "organisations", "persons", "projects"]
     # "outcomes"
     # "outcomes/keyfindings"
     # "outcomes/impactsummaries"
