@@ -41,7 +41,7 @@ jobs:
           #"persons",
           #"projects",
 
-    needs: set_timestamp # Make sure set_timestamp job is completed before running this job
+    needs: TIMESTAMP # Make sure TIMESTAMP job is completed before running this job
 
     steps:
       - name: Upgrade pip
@@ -80,5 +80,5 @@ jobs:
           MY_BUCKET_NAME: ${{ secrets.MY_BUCKET_NAME }}
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
           ENDPOINT: ${{ matrix.endpoint }}
-          TIMESTAMP: ${{ needs.set_timestamp.outputs.setTimestamp }}
+          TIMESTAMP: ${{ needs.TIMESTAMP.outputs.TIMESTAMP }}
         run: python discovery_gtr/getters/gtr_to_s3.py
