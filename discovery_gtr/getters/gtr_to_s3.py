@@ -61,8 +61,6 @@ AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 MY_BUCKET_NAME = os.getenv("MY_BUCKET_NAME")
 DESTINATION_S3_PATH = os.getenv("DESTINATION_S3_PATH")
 
-logging.info(f"TIMESTAMP variable is: {TIMESTAMP}; type: {type(TIMESTAMP)}")
-
 
 # # Define the API URL
 # BASE_URL = "https://gtr.ukri.org/gtr/api/"
@@ -74,8 +72,10 @@ logging.info(f"TIMESTAMP variable is: {TIMESTAMP}; type: {type(TIMESTAMP)}")
 # )
 
 
-# # Set up logging and set desired logging level
-# logging.basicConfig(level=logging.INFO)
+# Set up logging and set desired logging level
+logging.basicConfig(level=logging.INFO)
+
+logging.info(f"TIMESTAMP variable is: {TIMESTAMP}; type: {type(TIMESTAMP)}")
 
 
 # def main_request(
