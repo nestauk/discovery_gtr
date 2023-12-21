@@ -1,3 +1,60 @@
+import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+
+def main_request(
+    base_url: str, endpoint: str, page_parameter: str = "", max_retries: int = 3
+):
+    """Call GtR API to get a response object.
+    Args:
+        url (str): The base URL for the API.
+        endpoint (str): The endpoint to call.
+        max_retries (int): Maximum number of retries in case of failure.
+        Returns:
+            A response object or None if unsuccessful after retries."""
+
+    full_url = base_url + endpoint + "?s=100" + page_parameter
+
+    # Create a session with retry configuration
+    session = requests.Session()
+    retries = Retry(
+        total=max_retries, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504]
+    )
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
+    for attempt in range(max_retries + 1):
+        try:
+            response = session.get(
+                full_url,
+                headers={"Accept": "application/vnd.rcuk.gtr.json-v7"},
+            )
+            # Check if the response is successful (status code 2xx)
+            if response.ok:
+                return response
+            else:
+                response.raise_for_status()  # Raise an exception for non-successful responses
+        except requests.RequestException as e:
+            if attempt < max_retries:
+                # Retry if it's not the last attempt
+                print(f"Attempt {attempt + 1} failed. Retrying...")
+            else:
+                print(f"All attempts failed. Exception: {e}")
+                return None  # All attempts failed, return None
+
+
+ENDPOINT = "organisations"
+
+# Define the API URL
+BASE_URL = "https://gtr.ukri.org/gtr/api/"
+
+r = main_request(BASE_URL, ENDPOINT, "&p=1")
+
+print(r.content)
+
+
 # Old code
 
 

@@ -74,19 +74,46 @@ S3 = boto3.client(
 logging.basicConfig(level=logging.INFO)
 
 
-def main_request(base_url: str, endpoint: str, page_parameter: str = ""):
+def main_request(
+    base_url: str, endpoint: str, page_parameter: str = "", max_retries: int = 3
+):
     """Call GtR API to get a response object.
     Args:
         url (str): The base URL for the API.
         endpoint (str): The endpoint to call.
+        max_retries (int): Maximum number of retries in case of failure.
         Returns:
-            A response object."""
+            A response object or None if unsuccessful after retries."""
+
     full_url = base_url + endpoint + "?s=100" + page_parameter
-    response = requests.get(
-        full_url,
-        headers={"Accept": "application/vnd.rcuk.gtr.json-v7"},
+
+    # Create a session with retry configuration
+    session = requests.Session()
+    retries = Retry(
+        total=max_retries, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504]
     )
-    return response
+    adapter = HTTPAdapter(max_retries=retries)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
+    for attempt in range(max_retries + 1):
+        try:
+            response = session.get(
+                full_url,
+                headers={"Accept": "application/vnd.rcuk.gtr.json-v7"},
+            )
+            # Check if the response is successful (status code 2xx)
+            if response.ok:
+                return response
+            else:
+                response.raise_for_status()  # Raise an exception for non-successful responses
+        except requests.RequestException as e:
+            if attempt < max_retries:
+                # Retry if it's not the last attempt
+                print(f"Attempt {attempt + 1} failed. Retrying...")
+            else:
+                print(f"All attempts failed. Exception: {e}")
+                return None  # All attempts failed, return None
 
 
 def get_total_pages(response) -> int:
@@ -176,7 +203,7 @@ def gtr_to_s3(endpoint: str) -> None:
     total_pages = get_total_pages(r.content)
     logging.info(f"{total_pages}: Total number of pages for {endpoint}")
     # Get the page range
-    range = get_page_range(total_pages)
+    page_range = range(1, total_pages + 1)
 
     # Get S3 key
     s3_key = get_s3_key(endpoint, DESTINATION_S3_PATH, TIMESTAMP)
@@ -187,7 +214,7 @@ def gtr_to_s3(endpoint: str) -> None:
     # Initialize the previously logged percentage
     prev_percentage = None
 
-    for page_no in range:
+    for page_no in page_range:
         # Fetch the page
         r = main_request(BASE_URL, endpoint, f"&p={page_no}")
         # Accumulate data
