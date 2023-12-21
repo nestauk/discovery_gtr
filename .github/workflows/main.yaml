@@ -9,23 +9,11 @@ on:
 jobs:
   set_timestamp:
     runs-on: ubuntu-latest
-    outputs:
-      # Define the output variable to store the timestamp
-      id: set_timestamp
-      setTimestamp: ${{ steps.set_timestamp.outputs.timestamp }}
     steps:
       - name: Set up timestamp
-        id: set_timestamp
-        run: echo "timestamp=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+        run: echo "TIMESTAMP=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
       - name: Show timestamp
-        run: echo "Timestamp is ${{ steps.set_timestamp.outputs.timestamp }}"
-
-  show_timestamp:
-    runs-on: ubuntu-latest
-    needs: set_timestamp
-    steps:
-      - name: Show timestamp
-        run: echo "Timestamp is ${{ needs.set_timestamp.outputs.timestamp }}"
+        run: echo "Timestamp is $TIMESTAMP"
 # Commenting out the following jobs for testing the timestamp job
 # run_script:
 #   runs-on: ubuntu-latest # Use the latest version of Ubuntu
