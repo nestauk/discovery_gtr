@@ -7,47 +7,21 @@ on:
     branches-ignore: [] # will run whenever pushed to any branch
 
 jobs:
-  TIMESTAMP:
-    runs-on: ubuntu-latest
-    outputs:
-      id: TIMESTAMP
-      TIMESTAMP: ${{ steps.TIMESTAMP.outputs.TIMESTAMP }}
-    steps:
-      - name: Set up timestamp
-        run: echo "TIMESTAMP=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
-      - name: Show timestamp
-        run: echo "Timestamp is $TIMESTAMP"
-
   run_script:
     runs-on: ubuntu-latest # Use the latest version of Ubuntu
 
-    strategy:
-      matrix:
-        endpoint:
-          ["funds"]
-          #"organisations",
-          # "outcomes",
-          # "outcomes/keyfindings",
-          # "outcomes/impactsummaries",
-          # "outcomes/publications",
-          # "outcomes/collaborations",
-          # "outcomes/intellectualproperties",
-          # "outcomes/policyinfluences",
-          # "outcomes/products",
-          # "outcomes/researchmaterials",
-          # "outcomes/spinouts",
-          # "outcomes/furtherfundings",
-          # "outcomes/disseminations",
-          #"persons",
-          #"projects",
-
-    needs: TIMESTAMP # Make sure TIMESTAMP job is completed before running this job
-
     steps:
+      - name: Set up timestamp
+        id: set_timestamp
+        run: |
+          echo "TIMESTAMP=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+          echo "Timestamp is $TIMESTAMP"
+
       - name: Upgrade pip
         run: |
           python -m pip install --upgrade pip
           python -m pip install --upgrade botocore
+
       - name: Checkout repository
         uses: actions/checkout@v4 # Use the latest version compatible
 
@@ -66,6 +40,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install direnv
+
       - name: Install dependencies
         run: |
           make install
@@ -79,6 +54,5 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           MY_BUCKET_NAME: ${{ secrets.MY_BUCKET_NAME }}
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
-          ENDPOINT: ${{ matrix.endpoint }}
-          TIMESTAMP: ${{ needs.TIMESTAMP.outputs.TIMESTAMP }}
+          TIMESTAMP: ${{ steps.set_timestamp.outputs.TIMESTAMP }}
         run: python discovery_gtr/getters/gtr_to_s3.py
