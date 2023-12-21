@@ -61,7 +61,7 @@ AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 MY_BUCKET_NAME = os.getenv("MY_BUCKET_NAME")
 DESTINATION_S3_PATH = os.getenv("DESTINATION_S3_PATH")
 
-print(TIMESTAMP)
+logging.info(TIMESTAMP)
 
 
 # Define the API URL
@@ -114,9 +114,9 @@ def main_request(
         except requests.RequestException as e:
             if attempt < max_retries:
                 # Retry if it's not the last attempt
-                print(f"Attempt {attempt + 1} failed. Retrying...")
+                logging.info(f"Attempt {attempt + 1} failed. Retrying...")
             else:
-                print(f"All attempts failed. Exception: {e}")
+                logging.info(f"All attempts failed. Exception: {e}")
                 return None  # All attempts failed, return None
 
 
