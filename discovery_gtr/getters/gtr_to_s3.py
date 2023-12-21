@@ -61,205 +61,205 @@ AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 MY_BUCKET_NAME = os.getenv("MY_BUCKET_NAME")
 DESTINATION_S3_PATH = os.getenv("DESTINATION_S3_PATH")
 
-logging.info(TIMESTAMP)
+logging.info(f"TIMESTAMP variable is: {TIMESTAMP}; type: {type(TIMESTAMP)}")
 
 
-# Define the API URL
-BASE_URL = "https://gtr.ukri.org/gtr/api/"
+# # Define the API URL
+# BASE_URL = "https://gtr.ukri.org/gtr/api/"
 
 
-# Initialize the S3 client with credentials
-S3 = boto3.client(
-    "s3", aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY
-)
+# # Initialize the S3 client with credentials
+# S3 = boto3.client(
+#     "s3", aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY
+# )
 
 
-# Set up logging and set desired logging level
-logging.basicConfig(level=logging.INFO)
+# # Set up logging and set desired logging level
+# logging.basicConfig(level=logging.INFO)
 
 
-def main_request(
-    base_url: str, endpoint: str, page_parameter: str = "", max_retries: int = 3
-):
-    """Call GtR API to get a response object.
-    Args:
-        url (str): The base URL for the API.
-        endpoint (str): The endpoint to call.
-        max_retries (int): Maximum number of retries in case of failure.
-        Returns:
-            A response object or None if unsuccessful after retries."""
+# def main_request(
+#     base_url: str, endpoint: str, page_parameter: str = "", max_retries: int = 3
+# ):
+#     """Call GtR API to get a response object.
+#     Args:
+#         url (str): The base URL for the API.
+#         endpoint (str): The endpoint to call.
+#         max_retries (int): Maximum number of retries in case of failure.
+#         Returns:
+#             A response object or None if unsuccessful after retries."""
 
-    full_url = base_url + endpoint + "?s=100" + page_parameter
+#     full_url = base_url + endpoint + "?s=100" + page_parameter
 
-    # Create a session with retry configuration
-    session = requests.Session()
-    retries = Retry(
-        total=max_retries, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504]
-    )
-    adapter = HTTPAdapter(max_retries=retries)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
+#     # Create a session with retry configuration
+#     session = requests.Session()
+#     retries = Retry(
+#         total=max_retries, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504]
+#     )
+#     adapter = HTTPAdapter(max_retries=retries)
+#     session.mount("http://", adapter)
+#     session.mount("https://", adapter)
 
-    for attempt in range(max_retries + 1):
-        try:
-            response = session.get(
-                full_url,
-                headers={"Accept": "application/vnd.rcuk.gtr.json-v7"},
-            )
-            # Check if the response is successful (status code 2xx)
-            if response.ok:
-                return response
-            else:
-                response.raise_for_status()  # Raise an exception for non-successful responses
-        except requests.RequestException as e:
-            if attempt < max_retries:
-                # Retry if it's not the last attempt
-                logging.info(f"Attempt {attempt + 1} failed. Retrying...")
-            else:
-                logging.info(f"All attempts failed. Exception: {e}")
-                return None  # All attempts failed, return None
-
-
-def get_total_pages(response) -> int:
-    """Get the total number of pages from the response object.
-    Args:
-        response: The response object.
-    Returns:
-        The total number of pages."""
-    logging.info("Parsing total number of pages from API response")
-    json_response = json.loads(response)
-
-    # Extract the total number of pages
-    total_pages = json_response.get("totalPages", 0)
-
-    return int(total_pages)
+#     for attempt in range(max_retries + 1):
+#         try:
+#             response = session.get(
+#                 full_url,
+#                 headers={"Accept": "application/vnd.rcuk.gtr.json-v7"},
+#             )
+#             # Check if the response is successful (status code 2xx)
+#             if response.ok:
+#                 return response
+#             else:
+#                 response.raise_for_status()  # Raise an exception for non-successful responses
+#         except requests.RequestException as e:
+#             if attempt < max_retries:
+#                 # Retry if it's not the last attempt
+#                 logging.info(f"Attempt {attempt + 1} failed. Retrying...")
+#             else:
+#                 logging.info(f"All attempts failed. Exception: {e}")
+#                 return None  # All attempts failed, return None
 
 
-def get_page_range(total_pages: int) -> range:
-    """Get a range of integers from 1 to the total number of pages.
-    Args:
-        total_pages (int): The total number of pages.
-    Returns:
-        A range of integers."""
-    logging.info(f"Generating page range from 1 to {total_pages}")
-    return range(1, total_pages + 1)
+# def get_total_pages(response) -> int:
+#     """Get the total number of pages from the response object.
+#     Args:
+#         response: The response object.
+#     Returns:
+#         The total number of pages."""
+#     logging.info("Parsing total number of pages from API response")
+#     json_response = json.loads(response)
+
+#     # Extract the total number of pages
+#     total_pages = json_response.get("totalPages", 0)
+
+#     return int(total_pages)
 
 
-def get_s3_key(name: str, destination_path: str, timestamp: str) -> str:
-    """
-    Generates the S3 key for the file.
-    Args:
-        name: The name of the file.
-        destination_path: The path to the S3 destination folder.
-    Returns:
-        str: The S3 key for the given file.
-    """
-    logging.info("Generating S3 key for the file")
-    return f"{destination_path}GtR_{timestamp}/gtr_{name}.csv"
+# def get_page_range(total_pages: int) -> range:
+#     """Get a range of integers from 1 to the total number of pages.
+#     Args:
+#         total_pages (int): The total number of pages.
+#     Returns:
+#         A range of integers."""
+#     logging.info(f"Generating page range from 1 to {total_pages}")
+#     return range(1, total_pages + 1)
 
 
-def upload_data_to_s3(
-    data: list, s3_client: str, bucket_name: str, s3_key: str
-) -> None:
-    """Upload data to a JSON file stored on S3.
-    Args:
-        data (list): The list of data to upload.
-        s3_client (str): The S3 client.
-        bucket_name (str): The name of the bucket.
-        s3_key (str): The S3 key.
-    Returns:
-        None"""
-    logging.info(f"Uploading data to S3: {s3_key}")
-    json_data = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    s3_client.put_object(Body=json_data.encode("utf-8"), Bucket=bucket_name, Key=s3_key)
+# def get_s3_key(name: str, destination_path: str, timestamp: str) -> str:
+#     """
+#     Generates the S3 key for the file.
+#     Args:
+#         name: The name of the file.
+#         destination_path: The path to the S3 destination folder.
+#     Returns:
+#         str: The S3 key for the given file.
+#     """
+#     logging.info("Generating S3 key for the file")
+#     return f"{destination_path}GtR_{timestamp}/gtr_{name}.csv"
 
 
-def log_percentage_complete(
-    page_no: int, total_pages: int, prev_percentage: int, endpoint: str
-) -> int:
-    """Logs the percentage of completion.
-    Args:
-        page_no (int): The current page number.
-        total_pages (int): The total number of pages.
-        prev_percentage (int): The previously logged percentage.
-    Returns:
-        int: The updated previously logged percentage."""
-    # Log the percentage of completion when it reaches a milestone
-    percentage_complete = (page_no / total_pages) * 100
-    rounded_percentage = math.floor(percentage_complete)
-
-    # Check if the rounded percentage has changed
-    if rounded_percentage != prev_percentage:
-        logging.info(f"{endpoint}: Downloaded {rounded_percentage}%")
-
-    return rounded_percentage
+# def upload_data_to_s3(
+#     data: list, s3_client: str, bucket_name: str, s3_key: str
+# ) -> None:
+#     """Upload data to a JSON file stored on S3.
+#     Args:
+#         data (list): The list of data to upload.
+#         s3_client (str): The S3 client.
+#         bucket_name (str): The name of the bucket.
+#         s3_key (str): The S3 key.
+#     Returns:
+#         None"""
+#     logging.info(f"Uploading data to S3: {s3_key}")
+#     json_data = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+#     s3_client.put_object(Body=json_data.encode("utf-8"), Bucket=bucket_name, Key=s3_key)
 
 
-def gtr_to_s3(endpoint: str) -> None:
-    """Fetches a paginated bulk data resource from GtR API, and saves it to S3.
-    Args:
-        endpoint (str): The endpoint to call.
-    Returns:
-        None"""
-    logging.info(f"Starting workflow for endpoint: {endpoint}")
-    # Get the total number of pages
-    r = main_request(BASE_URL, endpoint)
-    total_pages = get_total_pages(r.content)
-    logging.info(f"{total_pages}: Total number of pages for {endpoint}")
-    # Get the page range
-    page_range = range(1, total_pages + 1)
+# def log_percentage_complete(
+#     page_no: int, total_pages: int, prev_percentage: int, endpoint: str
+# ) -> int:
+#     """Logs the percentage of completion.
+#     Args:
+#         page_no (int): The current page number.
+#         total_pages (int): The total number of pages.
+#         prev_percentage (int): The previously logged percentage.
+#     Returns:
+#         int: The updated previously logged percentage."""
+#     # Log the percentage of completion when it reaches a milestone
+#     percentage_complete = (page_no / total_pages) * 100
+#     rounded_percentage = math.floor(percentage_complete)
 
-    # Get S3 key
-    s3_key = get_s3_key(endpoint, DESTINATION_S3_PATH, TIMESTAMP)
+#     # Check if the rounded percentage has changed
+#     if rounded_percentage != prev_percentage:
+#         logging.info(f"{endpoint}: Downloaded {rounded_percentage}%")
 
-    # Accumulate data for all pages
-    all_data = []
-
-    # Initialize the previously logged percentage
-    prev_percentage = None
-
-    for page_no in page_range:
-        # Fetch the page
-        r = main_request(BASE_URL, endpoint, f"&p={page_no}")
-        # Accumulate data
-        all_data.extend(r.json())
-
-        # Log the percentage of completion
-        prev_percentage = log_percentage_complete(
-            page_no, total_pages, prev_percentage, endpoint
-        )
-
-    # Upload all data to S3 using s3.put_object()
-    upload_data_to_s3(all_data, S3, MY_BUCKET_NAME, s3_key)
+#     return rounded_percentage
 
 
-def local_wrapper():
-    """Wrapper function for local execution."""
-    if ENDPOINTS:
-        for endpoint in ENDPOINTS:
-            gtr_to_s3(endpoint)
-    else:
-        logging.error(
-            "Endpoints not specified. Please set the ENDPOINTS environment variable."
-        )
+# def gtr_to_s3(endpoint: str) -> None:
+#     """Fetches a paginated bulk data resource from GtR API, and saves it to S3.
+#     Args:
+#         endpoint (str): The endpoint to call.
+#     Returns:
+#         None"""
+#     logging.info(f"Starting workflow for endpoint: {endpoint}")
+#     # Get the total number of pages
+#     r = main_request(BASE_URL, endpoint)
+#     total_pages = get_total_pages(r.content)
+#     logging.info(f"{total_pages}: Total number of pages for {endpoint}")
+#     # Get the page range
+#     page_range = range(1, total_pages + 1)
+
+#     # Get S3 key
+#     s3_key = get_s3_key(endpoint, DESTINATION_S3_PATH, TIMESTAMP)
+
+#     # Accumulate data for all pages
+#     all_data = []
+
+#     # Initialize the previously logged percentage
+#     prev_percentage = None
+
+#     for page_no in page_range:
+#         # Fetch the page
+#         r = main_request(BASE_URL, endpoint, f"&p={page_no}")
+#         # Accumulate data
+#         all_data.extend(r.json())
+
+#         # Log the percentage of completion
+#         prev_percentage = log_percentage_complete(
+#             page_no, total_pages, prev_percentage, endpoint
+#         )
+
+#     # Upload all data to S3 using s3.put_object()
+#     upload_data_to_s3(all_data, S3, MY_BUCKET_NAME, s3_key)
 
 
-def github_wrapper():
-    """Wrapper function for GitHub Actions execution."""
-    if ENDPOINT:
-        gtr_to_s3(ENDPOINT)
-    else:
-        logging.error(
-            "Endpoint not specified. Please set the ENDPOINT environment variable."
-        )
+# def local_wrapper():
+#     """Wrapper function for local execution."""
+#     if ENDPOINTS:
+#         for endpoint in ENDPOINTS:
+#             gtr_to_s3(endpoint)
+#     else:
+#         logging.error(
+#             "Endpoints not specified. Please set the ENDPOINTS environment variable."
+#         )
 
 
-# Run the workflow
-if __name__ == "__main__":
-    logging.info("Script execution started")
-    # Check if running in GitHub Actions
-    if os.getenv("CI") == "true":
-        github_wrapper()
-    else:
-        local_wrapper()
-    logging.info("Script execution completed")
+# def github_wrapper():
+#     """Wrapper function for GitHub Actions execution."""
+#     if ENDPOINT:
+#         gtr_to_s3(ENDPOINT)
+#     else:
+#         logging.error(
+#             "Endpoint not specified. Please set the ENDPOINT environment variable."
+#         )
+
+
+# # Run the workflow
+# if __name__ == "__main__":
+#     logging.info("Script execution started")
+#     # Check if running in GitHub Actions
+#     if os.getenv("CI") == "true":
+#         github_wrapper()
+#     else:
+#         local_wrapper()
+#     logging.info("Script execution completed")
