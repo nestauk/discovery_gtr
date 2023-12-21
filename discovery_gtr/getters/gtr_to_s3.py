@@ -61,6 +61,8 @@ AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 MY_BUCKET_NAME = os.getenv("MY_BUCKET_NAME")
 DESTINATION_S3_PATH = os.getenv("DESTINATION_S3_PATH")
 
+print(TIMESTAMP)
+
 
 # Define the API URL
 BASE_URL = "https://gtr.ukri.org/gtr/api/"
