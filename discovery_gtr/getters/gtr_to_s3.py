@@ -35,16 +35,22 @@ import math
 # - MY_BUCKET_NAME: the name of the S3 bucket
 # - DESTINATION_S3_PATH: the path to the S3 destination folder
 # - ENDPOINT: the endpoint to call
+# - TIMESTAMP: the timestamp to use for the S3 key
 
 # Check if running in GitHub Actions
 if os.getenv("CI") == "true":
     # Retrieve the endpoint from the environment variable
     ENDPOINT = os.getenv("ENDPOINT")
+    # Retrieve timestamp from environment variables
+    TIMESTAMP = os.getenv("TIMESTAMP")
 else:
     # If running locally, load environment variables from .env file
     load_dotenv()
     # Retrieve the endpoints from the environment variable
     ENDPOINTS = json.loads(os.getenv("ENDPOINTS"))
+    # Generate timestamp
+    now = datetime.datetime.now()
+    TIMESTAMP = now.strftime("%Y%m%d_%H%M%S")
 
 # Retrieve AWS credentials from environment variables
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
@@ -108,7 +114,7 @@ def get_page_range(total_pages: int) -> range:
     return range(1, total_pages + 1)
 
 
-def get_s3_key(name: str, destination_path: str) -> str:
+def get_s3_key(name: str, destination_path: str, timestamp: str) -> str:
     """
     Generates the S3 key for the file.
     Args:
@@ -118,8 +124,6 @@ def get_s3_key(name: str, destination_path: str) -> str:
         str: The S3 key for the given file.
     """
     logging.info("Generating S3 key for the file")
-    now = datetime.datetime.now()
-    timestamp = now.strftime("%Y%m%d_%H%M%S")
     return f"{destination_path}GtR_{timestamp}/gtr_{name}.csv"
 
 
@@ -175,7 +179,7 @@ def gtr_to_s3(endpoint: str) -> None:
     range = get_page_range(total_pages)
 
     # Get S3 key
-    s3_key = get_s3_key(endpoint, DESTINATION_S3_PATH)
+    s3_key = get_s3_key(endpoint, DESTINATION_S3_PATH, TIMESTAMP)
 
     # Accumulate data for all pages
     all_data = []

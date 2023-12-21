@@ -7,6 +7,19 @@ on:
     branches-ignore: [] # will run whenever pushed to any branch
 
 jobs:
+  set_timestamp:
+    runs-on: ubuntu-latest
+    outputs:
+      # Define the output variable to store the timestamp
+      id: set_timestamp
+      setTimestamp: ${{ steps.set_timestamp.outputs.timestamp }}
+    steps:
+      - name: Set up timestamp
+        id: set_timestamp
+        run: echo "timestamp=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+      - name: Show timestamp
+        run: echo "Timestamp is ${{ steps.set_timestamp.outputs.timestamp }}"
+
   run_script:
     runs-on: ubuntu-latest # Use the latest version of Ubuntu
 
@@ -30,6 +43,8 @@ jobs:
             "persons",
             "projects",
           ]
+
+    needs: set_timestamp # Make sure set_timestamp job is completed before running this job
 
     steps:
       - name: Upgrade pip
@@ -68,4 +83,5 @@ jobs:
           MY_BUCKET_NAME: ${{ secrets.MY_BUCKET_NAME }}
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
           ENDPOINT: ${{ matrix.endpoint }}
+          TIMESTAMP: ${{ needs.set_timestamp.outputs.timestamp }}
         run: python discovery_gtr/getters/gtr_to_s3.py
