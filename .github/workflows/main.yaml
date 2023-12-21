@@ -7,11 +7,11 @@ on:
     branches-ignore: [] # will run whenever pushed to any branch
 
 jobs:
-  set_timestamp:
+  TIMESTAMP:
     runs-on: ubuntu-latest
     outputs:
-      id: set_timestamp
-      setTimestamp: ${{ steps.set_timestamp.outputs.TIMESTAMP }}
+      id: TIMESTAMP
+      TIMESTAMP: ${{ steps.TIMESTAMP.outputs.TIMESTAMP }}
     steps:
       - name: Set up timestamp
         run: echo "TIMESTAMP=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
