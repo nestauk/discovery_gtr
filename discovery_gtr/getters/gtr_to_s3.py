@@ -27,6 +27,8 @@ import boto3
 import os
 from dotenv import load_dotenv
 import math
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 
 # Set up environment variables, either from .env file or GitHub secrets. This includes:
