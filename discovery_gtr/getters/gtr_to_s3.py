@@ -212,6 +212,7 @@ def gtr_to_s3(endpoint: str) -> None:
 
     # Get S3 key
     s3_key = get_s3_key(endpoint, DESTINATION_S3_PATH, TIMESTAMP)
+    logging.info(f"S3 key: {s3_key}")
 
     # Accumulate data for all pages
     all_data = []
