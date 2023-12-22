@@ -8,14 +8,13 @@ on:
 
 jobs:
   set_timestamp:
-    runs-on: ubuntu-latest # Use the latest version of Ubuntu
+    runs-on: ubuntu-latest
 
     steps:
       - name: Set timestamp
-        run: |
-          TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
-          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
-        # Set timestamp for debugging
+        run: echo "TIMESTAMP=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+      - name: Print Timestamp
+        run: echo "Timestamp is $TIMESTAMP"
 
   run_script:
     runs-on: ubuntu-latest # Use the latest version of Ubuntu
