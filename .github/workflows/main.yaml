@@ -42,17 +42,11 @@ jobs:
           conda list
         # Print installed packages for debugging
 
-      - name: Set up timestamp
-        id: set_timestamp
-        run: |
-          echo "TIMESTAMP=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
-          echo "Timestamp is $TIMESTAMP"
-
       - name: Run GtR script
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           MY_BUCKET_NAME: ${{ secrets.MY_BUCKET_NAME }}
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
-          TIMESTAMP: ${{ steps.set_timestamp.outputs.TIMESTAMP }}
+          TIMESTAMP: ${{ $(date +'%Y%m%d_%H%M%S') }}
         run: python discovery_gtr/getters/gtr_to_s3.py
