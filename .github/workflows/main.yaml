@@ -7,6 +7,16 @@ on:
     branches-ignore: [] # will run whenever pushed to any branch
 
 jobs:
+  Set timestamp:
+    runs-on: ubuntu-latest # Use the latest version of Ubuntu
+
+    steps:
+      - name: Set timestamp
+        run: |
+          TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+        # Set timestamp for debugging
+
   run_script:
     runs-on: ubuntu-latest # Use the latest version of Ubuntu
 
@@ -62,12 +72,6 @@ jobs:
           pip install -r requirements.txt
           conda list
         # Print installed packages for debugging
-
-      - name: Set timestamp
-        run: |
-          TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
-          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
-        # Set timestamp for debugging
 
       - name: Run GtR script
         env:
