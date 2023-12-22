@@ -85,4 +85,4 @@ jobs:
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
           TIMESTAMP: ${{ env.timestamp }}
           ENDPOINT: ${{ matrix.endpoint }}
-        run: python discovery_gtr/getters/gtr_to_s3.py
+        run: python discovery_gtr/getters/gtr_to_s3.py "$timestamp"
