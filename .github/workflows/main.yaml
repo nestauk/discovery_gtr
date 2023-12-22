@@ -10,14 +10,19 @@ jobs:
   set_timestamp:
     runs-on: ubuntu-latest
 
+    outputs:
+      timestamp: ${{ steps.set_timestamp.outputs.timestamp }}
+
     steps:
       - name: Set timestamp
-        run: echo "TIMESTAMP=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+        id: set_timestamp
+        run: echo "::set-output name=timestamp::$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
       - name: Print Timestamp
         run: echo "Timestamp is $TIMESTAMP"
 
   run_script:
     runs-on: ubuntu-latest # Use the latest version of Ubuntu
+    needs: set_timestamp # Run the previous job first
 
     strategy:
       matrix:
@@ -78,6 +83,6 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           MY_BUCKET_NAME: ${{ secrets.MY_BUCKET_NAME }}
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
-          TIMESTAMP: ${{ env.TIMESTAMP }}
+          TIMESTAMP: ${{ env.timestamp }}
           ENDPOINT: ${{ matrix.endpoint }}
         run: python discovery_gtr/getters/gtr_to_s3.py
