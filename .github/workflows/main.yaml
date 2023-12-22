@@ -7,7 +7,7 @@ on:
     branches-ignore: [] # will run whenever pushed to any branch
 
 jobs:
-  Set timestamp:
+  set_timestamp:
     runs-on: ubuntu-latest # Use the latest version of Ubuntu
 
     steps:
