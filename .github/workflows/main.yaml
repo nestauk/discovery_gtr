@@ -10,6 +10,27 @@ jobs:
   run_script:
     runs-on: ubuntu-latest # Use the latest version of Ubuntu
 
+  strategy:
+    matrix:
+      endpoint: [
+          "funds",
+          "organisations",
+          # "outcomes",
+          # "outcomes/keyfindings",
+          # "outcomes/impactsummaries",
+          # "outcomes/publications",
+          # "outcomes/collaborations",
+          # "outcomes/intellectualproperties",
+          # "outcomes/policyinfluences",
+          # "outcomes/products",
+          # "outcomes/researchmaterials",
+          # "outcomes/spinouts",
+          # "outcomes/furtherfundings",
+          # "outcomes/disseminations",
+          "persons",
+          "projects",
+        ]
+
     steps:
       - name: Upgrade pip
         run: |
