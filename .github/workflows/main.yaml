@@ -16,9 +16,10 @@ jobs:
     steps:
       - name: Set timestamp
         id: set_timestamp
-        run: |
-          TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
-          echo "::set-env name=TIMESTAMP::$TIMESTAMP"
+        run: echo "TIMESTAMP=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+
+      - name: Print Timestamp
+        run: echo "Timestamp is ${{ env.TIMESTAMP }}"
         # The TIMESTAMP variable is available in the environment for this step.
 
   run_script:
