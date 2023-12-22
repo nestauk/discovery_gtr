@@ -85,6 +85,6 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           MY_BUCKET_NAME: ${{ secrets.MY_BUCKET_NAME }}
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
-          TIMESTAMP: ${{ needs.set_timestamp.outputs.timestamp }} # Access TIMESTAMP from the set_timestamp job
+          TIMESTAMP: ${{ needs.set_timestamp.outputs.TIMESTAMP }} # Access TIMESTAMP from the set_timestamp job
           ENDPOINT: ${{ matrix.endpoint }}
         run: python discovery_gtr/getters/gtr_to_s3.py "$TIMESTAMP"
