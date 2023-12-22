@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      timestamp: ${{ steps.set_timestamp.outputs.TIMESTAMP }}
+      TIMESTAMP: ${{ steps.set_timestamp.outputs.TIMESTAMP }}
 
     steps:
       - name: Set timestamp
