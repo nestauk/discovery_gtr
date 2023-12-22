@@ -11,14 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      timestamp: ${{ steps.set_timestamp.outputs.timestamp }}
+      timestamp: ${{ steps.set_timestamp.outputs.TIMESTAMP }}
 
     steps:
       - name: Set timestamp
         id: set_timestamp
-        run: echo "::set-output name=TIMESTAMP::$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
-      - name: Print Timestamp
-        run: echo "Timestamp is $TIMESTAMP"
+        run: |
+          TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
+          echo "::set-env name=TIMESTAMP::$TIMESTAMP"
+        # The TIMESTAMP variable is available in the environment for this step.
 
   run_script:
     runs-on: ubuntu-latest # Use the latest version of Ubuntu
