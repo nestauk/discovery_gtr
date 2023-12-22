@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Set timestamp
         id: set_timestamp
-        run: echo "::set-output name=timestamp::$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+        run: echo "::set-output name=TIMESTAMP::$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
       - name: Print Timestamp
         run: echo "Timestamp is $TIMESTAMP"
 
@@ -83,6 +83,6 @@ jobs:
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           MY_BUCKET_NAME: ${{ secrets.MY_BUCKET_NAME }}
           DESTINATION_S3_PATH: ${{ secrets.DESTINATION_S3_PATH }}
-          TIMESTAMP: ${{ env.timestamp }}
+          TIMESTAMP: ${{ env.TIMESTAMP }}
           ENDPOINT: ${{ matrix.endpoint }}
-        run: python discovery_gtr/getters/gtr_to_s3.py "$timestamp"
+        run: python discovery_gtr/getters/gtr_to_s3.py "$TIMESTAMP"
