@@ -36,8 +36,7 @@ from requests.packages.urllib3.util.retry import Retry
 # - AWS_SECRET_KEY: the AWS secret key for S3
 # - MY_BUCKET_NAME: the name of the S3 bucket
 # - DESTINATION_S3_PATH: the path to the S3 destination folder
-# - ENDPOINT: the endpoint to call
-# - TIMESTAMP: the timestamp to use for the S3 key
+# - ENDPOINT / ENDPOINTS: the endpoint(s) to call
 
 # Check if running in GitHub Actions
 if os.getenv("CI") == "true":
@@ -156,7 +155,7 @@ def get_s3_key(name: str, destination_path: str, timestamp: str) -> str:
         str: The S3 key for the given file.
     """
     logging.info("Generating S3 key for the file")
-    return f"{destination_path}GtR_{timestamp}/gtr_{name}.csv"
+    return f"{destination_path}GtR_{timestamp}/gtr_{name}.json"
 
 
 def upload_data_to_s3(
@@ -172,7 +171,12 @@ def upload_data_to_s3(
         None"""
     logging.info(f"Uploading data to S3: {s3_key}")
     json_data = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    s3_client.put_object(Body=json_data.encode("utf-8"), Bucket=bucket_name, Key=s3_key)
+    s3_client.put_object(
+        Body=json_data.encode("utf-8"),
+        Bucket=bucket_name,
+        Key=s3_key,
+        ContentType="application/json",
+    )
 
 
 def log_percentage_complete(
@@ -238,6 +242,7 @@ def gtr_to_s3(endpoint: str) -> None:
 def local_wrapper():
     """Wrapper function for local execution."""
     if ENDPOINTS:
+        logging.info("local_wrapper used")
         for endpoint in ENDPOINTS:
             gtr_to_s3(endpoint)
     else:
@@ -249,6 +254,7 @@ def local_wrapper():
 def github_wrapper():
     """Wrapper function for GitHub Actions execution."""
     if ENDPOINT:
+        logging.info("github_wrapper used")
         gtr_to_s3(ENDPOINT)
     else:
         logging.error(
