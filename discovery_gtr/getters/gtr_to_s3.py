@@ -43,16 +43,11 @@ from requests.packages.urllib3.util.retry import Retry
 if os.getenv("CI") == "true":
     # Retrieve the endpoint from the environment variable
     ENDPOINT = os.getenv("ENDPOINT")
-    # Retrieve timestamp from environment variables
-    TIMESTAMP = os.getenv("TIMESTAMP")
 else:
     # If running locally, load environment variables from .env file
     load_dotenv()
     # Retrieve the endpoints from the environment variable
     ENDPOINTS = json.loads(os.getenv("ENDPOINTS"))
-    # Generate timestamp
-    now = datetime.datetime.now()
-    TIMESTAMP = now.strftime("%Y%m%d_%H%M%S")
 
 # Retrieve AWS credentials from environment variables
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
@@ -70,6 +65,11 @@ BASE_URL = "https://gtr.ukri.org/gtr/api/"
 S3 = boto3.client(
     "s3", aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY
 )
+
+
+# Generate timestamp
+now = datetime.datetime.now()
+TIMESTAMP = now.strftime("%Y%m%d")
 
 
 # Set up logging and set desired logging level
