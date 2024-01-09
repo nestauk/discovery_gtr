@@ -16,6 +16,11 @@ Locally:
 - The AWS_ACCESS_KEY, AWS_SECRET_KEY, MY_BUCKET_NAME and DESTINATION_S3_PATH environment
 variables are set in a .env file.
 
+Also, an identifier (key_to_extract) is generated to extract the relevant data from the JSON response.
+For the currently used endpoints (funds, projects, organisations, persons), the identifier is created
+by removing the last letter from the endpoint name. For example, the identifier for the "funds" endpoint
+is "fund", and the identifier for the "projects" endpoint is "project".
+
 Usage:
     python gtr_to_s3.py
 """
@@ -200,8 +205,20 @@ def log_percentage_complete(
     return rounded_percentage
 
 
+def save_data_locally(data: list, file_name: str) -> None:
+    """Save data to a JSON file locally.
+    Args:
+        data (list): The list of data to save.
+        file_name (str): The name of the JSON file.
+    Returns:
+        None"""
+    logging.info(f"Saving data locally: {file_name}")
+    with open(file_name, "w", encoding="utf-8") as json_file:
+        json.dump(data, json_file, ensure_ascii=False, separators=(",", ":"))
+
+
 def gtr_to_s3(endpoint: str) -> None:
-    """Fetches a paginated bulk data resource from GtR API, and saves it to S3.
+    """Fetches data from a few pages of a GtR API endpoint and saves it locally as JSON.
     Args:
         endpoint (str): The endpoint to call.
     Returns:
@@ -211,24 +228,35 @@ def gtr_to_s3(endpoint: str) -> None:
     r = main_request(BASE_URL, endpoint)
     total_pages = get_total_pages(r.content)
     logging.info(f"{total_pages}: Total number of pages for {endpoint}")
-    # Get the page range
-    page_range = range(1, total_pages + 1)
 
     # Get S3 key
     s3_key = get_s3_key(endpoint, DESTINATION_S3_PATH, TIMESTAMP)
     logging.info(f"S3 key: {s3_key}")
 
-    # Accumulate data for all pages
-    all_data = []
+    # Define the maximum number of pages to append
+    max_pages_to_append = 5
 
     # Initialize the previously logged percentage
     prev_percentage = None
 
-    for page_no in page_range:
+    # Extract the key to use based on the endpoint
+    key_to_extract = endpoint[:-1]  # Remove the last character "s" from the endpoint
+
+    # Accumulate data for the specified number of pages
+    all_data = []
+
+    for page_no in range(1, total_pages + 1):
         # Fetch the page
         r = main_request(BASE_URL, endpoint, f"&p={page_no}")
-        # Accumulate data
-        all_data.extend(r.json())
+
+        # Parse the JSON response
+        response_data = r.json()
+
+        # Extract the relevant data using the dynamically determined key
+        data_to_append = response_data.get(key_to_extract, [])  # Get the list of data
+
+        # Extend the all_data list with the extracted data
+        all_data.extend(data_to_append)
 
         # Log the percentage of completion
         prev_percentage = log_percentage_complete(
