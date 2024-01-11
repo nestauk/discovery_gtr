@@ -76,6 +76,39 @@ now = datetime.datetime.now()
 TIMESTAMP = now.strftime("%Y%m%d")
 
 
+# Define endpoint headers based on the structure
+ENDPOINT_HEADERS = {
+    "funds": [
+        "end",
+        "id",
+        "start",
+        "category",
+        "rel",
+        "amount",
+        "currencyCode",
+        "project_id",
+    ],
+    "persons": [
+        "id",
+        "firstName",
+        "surname",
+        "rel",
+        "project_id",
+        "otherNames",
+    ],
+    "organisations": [
+        "id",
+        "name",
+        "addresses",
+    ],
+    "projects": [
+        "id",
+        "name",
+        "addresses",
+    ],
+}
+
+
 # Set up logging and set desired logging level
 logging.basicConfig(level=logging.INFO)
 
@@ -239,21 +272,27 @@ def gtr_to_s3(endpoint: str) -> None:
     # Initialize the previously logged percentage
     prev_percentage = None
 
-    # Extract the key to use based on the endpoint
-    key_to_extract = endpoint[:-1]  # Remove the last character "s" from the endpoint
-
     # Accumulate data for the specified number of pages
     all_data = []
 
-    for page_no in range(1, total_pages + 1):
+    # Access the corresponding headers list based on the endpoint
+    if endpoint in ENDPOINT_HEADERS:
+        headers = ENDPOINT_HEADERS[endpoint]
+        print(f"Headers for {endpoint}: {headers}")
+    else:
+        print(f"No headers found for {endpoint}")
+
+    for page_no in range(1, max_pages_to_append + 1):
         # Fetch the page
         r = main_request(BASE_URL, endpoint, f"&p={page_no}")
 
         # Parse the JSON response
         response_data = r.json()
 
-        # Extract the relevant data using the dynamically determined key
-        data_to_append = response_data.get(key_to_extract, [])  # Get the list of data
+        # Extract the relevant data using the determined headers
+        data_to_append = [
+            {header: item.get(header) for header in headers} for item in response_data
+        ]
 
         # Extend the all_data list with the extracted data
         all_data.extend(data_to_append)
@@ -264,7 +303,10 @@ def gtr_to_s3(endpoint: str) -> None:
         )
 
     # Upload all data to S3 using s3.put_object()
-    upload_data_to_s3(all_data, S3, MY_BUCKET_NAME, s3_key)
+    # upload_data_to_s3(all_data, S3, MY_BUCKET_NAME, s3_key)
+
+    # Save all data to a file locally as JSON
+    save_data_locally(all_data, f"{endpoint}.json")
 
 
 def local_wrapper():
