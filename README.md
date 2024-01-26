@@ -62,8 +62,6 @@ The pipeline is designed to accommodate variations in data structure for differe
 
 If you need to customize data extraction for a specific endpoint or handle unique data structures, you can modify the `ENDPOINT_HEADERS` dictionary within the script. This dictionary maps endpoint names to lists of headers to extract. Adjusting the headers allows you to control which data fields are extracted for each endpoint.
 
-`python`
-
 # Example: Customized headers for a hypothetical 'custom' endpoint
 
 ENDPOINT_HEADERS = {
