@@ -60,20 +60,7 @@ The pipeline is designed to accommodate variations in data structure for differe
 
 ### Customization
 
-If you need to customize data extraction for a specific endpoint or handle unique data structures, you can modify the `ENDPOINT_HEADERS` dictionary within the script. This dictionary maps endpoint names to lists of headers to extract. Adjusting the headers allows you to control which data fields are extracted for each endpoint.
-
-# Example: Customized headers for a hypothetical 'custom' endpoint
-
-ENDPOINT_HEADERS = {
-"custom": [
-"field1",
-"field2",
-"field3",
-
-# Add additional headers as needed
-
-],
-}
+If you need to customize data extraction for a specific endpoint, you can modify the `ENDPOINT_HEADERS` dictionary within the script. This dictionary is designed to map endpoint names to lists of headers to extract, but currently does not do this, and produces the data in the default GtR mapping.
 
 ## Setup
 
