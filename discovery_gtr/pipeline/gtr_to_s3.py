@@ -34,7 +34,6 @@ from dotenv import load_dotenv
 import math
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-import pandas as pd
 
 
 # Set up environment variables, either from .env file or GitHub secrets. This includes:
@@ -101,8 +100,6 @@ ENDPOINT_HEADERS = {
         "id",
         "name",
         "addresses",
-        "rel",
-        "project_id",
     ],
     "projects": [
         "id",
@@ -174,16 +171,6 @@ def get_total_pages(response) -> int:
     total_pages = json_response.get("totalPages", 0)
 
     return int(total_pages)
-
-
-def get_page_range(total_pages: int) -> range:
-    """Get a range of integers from 1 to the total number of pages.
-    Args:
-        total_pages (int): The total number of pages.
-    Returns:
-        A range of integers."""
-    logging.info(f"Generating page range from 1 to {total_pages}")
-    return range(1, total_pages + 1)
 
 
 def get_s3_key(name: str, destination_path: str, timestamp: str) -> str:
@@ -270,7 +257,8 @@ def gtr_to_s3(endpoint: str) -> None:
     logging.info(f"S3 key: {s3_key}")
 
     # Define the maximum number of pages to append
-    max_pages_to_append = 5
+    # Change this to fetch more or fewer pages for testing
+    max_pages_to_append = total_pages
 
     # Initialize the previously logged percentage
     prev_percentage = None
@@ -285,35 +273,41 @@ def gtr_to_s3(endpoint: str) -> None:
     else:
         print(f"No headers found for {endpoint}")
 
-    # Remove the last letter from the endpoint to construct the key
-    key = endpoint[:-1]
+    for page_no in range(1, max_pages_to_append + 1):
+        # Fetch the page
+        r = main_request(BASE_URL, endpoint, f"&p={page_no}")
 
-    # Fetch the page
-    r = main_request(BASE_URL, endpoint, f"&p={90}")
+        # Parse the JSON response
+        response_data = json.loads(r.text)
 
-    # Parse the JSON response
-    response_data = json.loads(r.text)
+        # Initialize an empty list to store the extracted data
+        extracted_data = []
 
-    # Remove pagination data from the response
-    data = response_data.get(key, [])
+        # Loop through the response_data
+        for item in response_data:
+            # Initialize an empty dictionary to store the extracted data for each item
+            extracted_item = {}
 
-    # Load the list of dictionaries into a DataFrame
-    df = pd.DataFrame(data)
+            # Loop through the headers and extract data for each header
+            for header in headers:
+                extracted_item[header] = item.get(header)
 
-    # Define the endpoint and corresponding headers
-    endpoint = "funds"  # Change this to your specific endpoint
-    headers = ENDPOINT_HEADERS.get(endpoint, [])  # Get the headers for the endpoint
+            # Append the extracted item to the list
+            extracted_data.append(extracted_item)
 
-    # Select only the columns specified in the headers
-    filtered_df = df[headers]
+        # Extend the all_data list with the extracted data
+        all_data.extend(extracted_data)
 
-    # Save the modified DataFrame as a JSON file
-    filtered_df.to_json("output.json", orient="records")
+        # Log the percentage of completion
+        prev_percentage = log_percentage_complete(
+            page_no, total_pages, prev_percentage, endpoint
+        )
 
-    logging.info(f"Type of response_data for {endpoint}: {type(endpoint)}")
+    # Upload all data to S3 using s3.put_object()
+    upload_data_to_s3(all_data, S3, MY_BUCKET_NAME, s3_key)
 
     # Save all data to a file locally as JSON
-    save_data_locally(filtered_df, f"{endpoint}.json")
+    # save_data_locally(all_data, f"{endpoint}.json")
 
 
 def local_wrapper():
